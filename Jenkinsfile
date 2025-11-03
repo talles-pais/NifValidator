@@ -14,7 +14,10 @@ pipeline {
             }
             steps {
                 sh"""
+                export PIP_DISABLE_PIP_VERSION_CHECK=1
+                export PATH="$HOME/.local/bin:${PATH}"
                 pip install -r requirements.txt
+                pip install -r requirements-test.txt
                 """
             }
         }
@@ -30,5 +33,35 @@ pipeline {
                 }
             }
         }
+
+        stage('Unit Tests') {
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh 'pytest --junitxml result.xml tests/'
+            }
+            post {
+                always {
+                    archiveArtifacts 
+                        artifacts: 'result.xml',
+                        fingerprint: true,
+                        junit: 'result.xml'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh"""
+                    ssh -o StrictHostKeyChecking=no redhat@172.31.33.7 docker rm -f ${JOB_BASE_NAME} || true
+                    ssh -o StrictHostKeyChecking=no redhat@172.31.33.7 docker run -d --name ${JOB_BASE_NAME} -p 8080:9046 --pull always ${username}/${JOB_BASE_NAME}
+                """
+            }
+        }
+
     }
 }
