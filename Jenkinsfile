@@ -6,9 +6,11 @@ pipeline {
 
     stages {
         stage('Docker environment') {
-            docker {
-                image 'python:3.11-slim'
-                reuseNode true
+            agent {
+                docker {
+                    image 'python:3.11-slim'
+                    reuseNode true
+                }
             }
             steps {
                 sh"""
