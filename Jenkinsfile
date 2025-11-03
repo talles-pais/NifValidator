@@ -18,7 +18,19 @@ pipeline {
                 """
             }
         }
-        stage('Build') {
+        stage('Deliver') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-id', passwordVariable: 'passwd', usernameVariable: 'username')]) {
+                    sh"""
+                        printenv
+                        docker build -t tallespais/nif-validator .
+                        docker login -u ${username} -p ${passw}
+                        docker push ${username}/nif-validator
+                    """
+                }
+            }
+        }
+        stage('Deliver') {
             steps {
                 sh"""
                 docker build -t tallespais/nif-validator .
