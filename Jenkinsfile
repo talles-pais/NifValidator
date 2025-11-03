@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+    environment {
+        HOME = "${env.WORKSPACE}"
+    }
+
+    stages {
+        stage('Docker environment') {
+            docker {
+                image 'python:3.11-slim'
+                reuseNode true
+            }
+            steps {
+                sh"""
+                pip install -r requirements.txt
+                """
+            }
+        }
+        stage('Build') {
+            steps {
+                sh"""
+                docker build -t tallespais/nif-validator .
+                """
+            }
+        }
+    }
+}
