@@ -24,17 +24,10 @@ pipeline {
                     sh"""
                         printenv
                         docker build -t tallespais/nif-validator .
-                        docker login -u ${username} -p ${passw}
-                        docker push ${username}/nif-validator
+                        docker login -u ${username} -p ${passwd}
+                        docker push ${username}/${JOB_BASE_NAME}
                     """
                 }
-            }
-        }
-        stage('Deliver') {
-            steps {
-                sh"""
-                docker build -t tallespais/nif-validator .
-                """
             }
         }
     }
